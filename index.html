@@ -1,468 +1,350 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="theme-color" content="#0a0f1e"/>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#0a0f1e" />
 <title>Utrecht HM Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet"/>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;touch-action:manipulation}
-body{font-family:'DM Sans',sans-serif;color:#c8d6e5;background:#0a0f1e;-webkit-font-smoothing:antialiased}
-#app{height:100%;position:relative;overflow:hidden}
-
-.page{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding:0 16px 110px;-webkit-overflow-scrolling:touch;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .3s ease;will-change:transform,opacity}
-.page.hidden{pointer-events:none;opacity:0;transform:translateX(100%)}
-.page.slide-left{pointer-events:none;opacity:.4;transform:translateX(-25%)}
-.page.active{pointer-events:auto;opacity:1;transform:translateX(0)}
-
-.bg-glow{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
-.bg-glow.t{top:-20%;right:-10%;width:50vw;height:50vw;background:radial-gradient(circle,rgba(59,130,246,.06) 0%,transparent 70%)}
-.bg-glow.b{bottom:-10%;left:-10%;width:40vw;height:40vw;background:radial-gradient(circle,rgba(14,165,233,.04) 0%,transparent 70%)}
-
-.mx{max-width:480px;margin:0 auto;position:relative;z-index:1}
-.serif{font-family:'Playfair Display',serif}
-.lbl{font-size:11px;font-weight:600;color:#7ba1d4;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:block}
-
-.card{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);border-radius:12px;padding:14px 16px;margin-bottom:8px;cursor:pointer;transition:background .2s,border-color .2s}
-.card:active{background:rgba(255,255,255,.05)}
-.card.done{background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.15)}
-.card.skip{background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.1)}
-
-input,textarea{width:100%;padding:11px 14px;border-radius:10px;font-size:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#e8edf5;outline:none;font-family:'DM Sans',sans-serif}
-input:focus,textarea:focus{border-color:rgba(59,130,246,.4)}
-textarea{resize:vertical;min-height:72px}
-button{font-family:'DM Sans',sans-serif;cursor:pointer;border:none;outline:none;-webkit-tap-highlight-color:transparent}
-
-.pill{font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600;display:inline-block}
-.pill.blue{background:rgba(59,130,246,.12);color:#60a5fa}
-.pill.gold{background:rgba(234,179,8,.15);color:#eab308}
-.pill.now{font-size:10px;margin-left:8px;padding:2px 8px;border-radius:100px;background:rgba(59,130,246,.2);color:#60a5fa}
-
-.opt-btn{flex:1;padding:10px 4px;border-radius:10px;font-size:12px;font-weight:600;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);color:#4a6a8a;transition:all .2s;text-align:center}
-.opt-btn.sel{border-color:var(--sel-bc);background:var(--sel-bg);color:var(--sel-c)}
-
-.mood-btn{flex:1;padding:10px 0;border-radius:10px;font-size:24px;background:rgba(255,255,255,.03);border:2px solid rgba(255,255,255,.06);transition:all .2s;text-align:center}
-.mood-btn.sel{background:rgba(139,92,246,.15);border-color:rgba(139,92,246,.35)}
-.mood-btn small{display:block;font-size:9px;margin-top:3px}
-
-.bar-chart{display:flex;align-items:flex-end;gap:4px;height:120px;padding:12px 0}
-.bar-group{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%}
-.bar-group .bars{flex:1;display:flex;gap:2px;align-items:flex-end;width:100%}
-.bar-group .bar{flex:1;border-radius:3px 3px 0 0;transition:height .4s ease;min-height:2px}
-.bar-group .bar.planned{background:rgba(59,130,246,.18)}
-.bar-group .bar.actual{background:#3b82f6}
-.bar-group .lbl-x{font-size:8px;color:#4a6a8a;margin-top:4px;white-space:nowrap}
-
-.nav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:linear-gradient(180deg,rgba(15,23,42,.97) 0%,#0a0f1e 100%);border-top:1px solid rgba(255,255,255,.06);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-.nav-inner{display:flex;max-width:480px;margin:0 auto}
-.nav-btn{flex:1;padding:12px 0 10px;background:transparent;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;transition:color .2s}
-.nav-btn .ico{font-size:20px;line-height:1}
-
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.fu{animation:fadeUp .45s ease both}
-.fu1{animation-delay:.06s}.fu2{animation-delay:.12s}.fu3{animation-delay:.18s}.fu4{animation-delay:.24s}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body, #root { height: 100%; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    color: #c8d6e5;
+    background: linear-gradient(165deg, #0a0f1e 0%, #0f172a 40%, #131d35 100%);
+    -webkit-font-smoothing: antialiased;
+  }
+  input, textarea {
+    width: 100%; padding: 10px 14px; border-radius: 10px; font-size: 14px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+    color: #e8edf5; outline: none; font-family: 'DM Sans', sans-serif; box-sizing: border-box;
+  }
+  input:focus, textarea:focus { border-color: rgba(59,130,246,0.4); }
+  textarea { resize: vertical; min-height: 70px; }
+  button { font-family: 'DM Sans', sans-serif; cursor: pointer; border: none; outline: none; -webkit-tap-highlight-color: transparent; }
+  ::-webkit-scrollbar { width: 0; }
 </style>
 </head>
 <body>
-<div id="app">
-  <div class="bg-glow t"></div>
-  <div class="bg-glow b"></div>
-  <div id="pg-dash" class="page active"></div>
-  <div id="pg-plan" class="page hidden"></div>
-  <div id="pg-log" class="page hidden"></div>
-  <nav class="nav" id="main-nav">
-    <div class="nav-inner">
-      <button class="nav-btn" data-nav="dashboard" style="color:#3b82f6;font-weight:600">
-        <span class="ico">◉</span>Dashboard
-      </button>
-      <button class="nav-btn" data-nav="plan" style="color:#4a6a8a">
-        <span class="ico">▤</span>Training
-      </button>
-    </div>
-  </nav>
-</div>
+<div id="root"></div>
 
-<script>
-/* ─── DATA ─── */
-const RACE = new Date("2026-05-31T09:00:00");
-const KEY = "uhm-tracker-v2";
-const PLAN = [
-  {w:1,l:"Week 1 — Base",runs:[
-    {id:"w1r1",day:"Tue",type:"Easy Run",km:8,pace:"6:15",desc:"Comfortable pace, find your rhythm"},
-    {id:"w1r2",day:"Sat",type:"Long Run",km:12,pace:"6:10",desc:"Steady effort, practice hydration"}]},
-  {w:2,l:"Week 2 — Build",runs:[
-    {id:"w2r1",day:"Tue",type:"Tempo Run",km:8,pace:"5:50",desc:"2 km warm-up · 4 km tempo · 2 km cool-down"},
-    {id:"w2r2",day:"Sat",type:"Long Run",km:13,pace:"6:05",desc:"Push the distance, stay relaxed"}]},
-  {w:3,l:"Week 3 — Strengthen",runs:[
-    {id:"w3r1",day:"Tue",type:"Intervals",km:8,pace:"5:40",desc:"6 × 800 m at 5:20, 400 m recovery jog"},
-    {id:"w3r2",day:"Sat",type:"Long Run",km:15,pace:"6:00",desc:"Longest run yet — you've got this"}]},
-  {w:4,l:"Week 4 — Recovery",runs:[
-    {id:"w4r1",day:"Tue",type:"Easy Run",km:7,pace:"6:20",desc:"Recovery week — keep it gentle"},
-    {id:"w4r2",day:"Sat",type:"Long Run",km:12,pace:"6:10",desc:"Shorter long run, recharge the legs"}]},
-  {w:5,l:"Week 5 — Peak",runs:[
-    {id:"w5r1",day:"Tue",type:"Tempo Run",km:10,pace:"5:45",desc:"2 km warm-up · 6 km race pace · 2 km cool-down"},
-    {id:"w5r2",day:"Sat",type:"Long Run",km:17,pace:"5:55",desc:"Dress rehearsal — simulate race morning"}]},
-  {w:6,l:"Week 6 — Sharpen",runs:[
-    {id:"w6r1",day:"Tue",type:"Intervals",km:8,pace:"5:35",desc:"5 × 1 km at 5:20, 500 m recovery"},
-    {id:"w6r2",day:"Sat",type:"Long Run",km:14,pace:"5:50",desc:"Controlled & confident at goal pace"}]},
-  {w:7,l:"Week 7 — Taper & Race!",runs:[
-    {id:"w7r1",day:"Tue",type:"Easy Run",km:6,pace:"6:15",desc:"Shake out the legs, stay loose"},
-    {id:"w7r2",day:"Sun",type:"🏁 RACE DAY",km:21.1,pace:"5:41",desc:"HiPRO Half Marathon Utrecht — Onder de Domtoren!"}]},
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+<script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel" data-type="module">
+const { useState, useEffect, useCallback } = React;
+const { ResponsiveContainer, BarChart, Bar, AreaChart, Area, XAxis, YAxis, Tooltip } = Recharts;
+
+const RACE_DATE = new Date("2026-05-31T09:00:00");
+const STORAGE_KEY = "utrecht-hm-runs-v1";
+
+const TRAINING_PLAN = [
+  { week: 1, label: "Week 1 — Base", runs: [
+    { id: "w1r1", day: "Tue", type: "Easy Run", distance: 8, targetPace: "6:15", desc: "Comfortable pace, find your rhythm" },
+    { id: "w1r2", day: "Sat", type: "Long Run", distance: 12, targetPace: "6:10", desc: "Steady effort, practice hydration" },
+  ]},
+  { week: 2, label: "Week 2 — Build", runs: [
+    { id: "w2r1", day: "Tue", type: "Tempo Run", distance: 8, targetPace: "5:50", desc: "2km warm-up, 4km at tempo, 2km cool-down" },
+    { id: "w2r2", day: "Sat", type: "Long Run", distance: 13, targetPace: "6:05", desc: "Push the distance, stay relaxed" },
+  ]},
+  { week: 3, label: "Week 3 — Strengthen", runs: [
+    { id: "w3r1", day: "Tue", type: "Intervals", distance: 8, targetPace: "5:40", desc: "6 x 800m at 5:20 pace, 400m recovery jog" },
+    { id: "w3r2", day: "Sat", type: "Long Run", distance: 15, targetPace: "6:00", desc: "Longest run yet - you've got this" },
+  ]},
+  { week: 4, label: "Week 4 — Recovery", runs: [
+    { id: "w4r1", day: "Tue", type: "Easy Run", distance: 7, targetPace: "6:20", desc: "Recovery week - keep it gentle" },
+    { id: "w4r2", day: "Sat", type: "Long Run", distance: 12, targetPace: "6:10", desc: "Shorter long run, recharge the legs" },
+  ]},
+  { week: 5, label: "Week 5 — Peak", runs: [
+    { id: "w5r1", day: "Tue", type: "Tempo Run", distance: 10, targetPace: "5:45", desc: "2km warm-up, 6km at race pace, 2km cool-down" },
+    { id: "w5r2", day: "Sat", type: "Long Run", distance: 17, targetPace: "5:55", desc: "Dress rehearsal - simulate race morning" },
+  ]},
+  { week: 6, label: "Week 6 — Sharpen", runs: [
+    { id: "w6r1", day: "Tue", type: "Intervals", distance: 8, targetPace: "5:35", desc: "5 x 1km at 5:20 pace, 500m recovery" },
+    { id: "w6r2", day: "Sat", type: "Long Run", distance: 14, targetPace: "5:50", desc: "Controlled and confident at goal pace" },
+  ]},
+  { week: 7, label: "Week 7 — Taper & Race!", runs: [
+    { id: "w7r1", day: "Tue", type: "Easy Run", distance: 6, targetPace: "6:15", desc: "Shake out the legs, stay loose" },
+    { id: "w7r2", day: "Sun", type: "RACE DAY", distance: 21.1, targetPace: "5:41", desc: "HiPRO Half Marathon Utrecht - Under the Dom Tower!" },
+  ]},
 ];
-const ALL = PLAN.flatMap(w=>w.runs);
-const MOODS=[{v:1,e:"😫",l:"Awful"},{v:2,e:"😕",l:"Rough"},{v:3,e:"😐",l:"Okay"},{v:4,e:"😊",l:"Good"},{v:5,e:"🤩",l:"Amazing"}];
-const NRG=[{v:1,l:"Empty",c:"#ef4444"},{v:2,l:"Low",c:"#f97316"},{v:3,l:"Medium",c:"#eab308"},{v:4,l:"High",c:"#22c55e"},{v:5,l:"Super",c:"#06b6d4"}];
-const QUOTES=[
+
+const ALL_RUNS = TRAINING_PLAN.flatMap(w => w.runs);
+
+const MOOD_OPTIONS = [
+  { value: 1, emoji: "\u{1F62B}", label: "Awful" },
+  { value: 2, emoji: "\u{1F615}", label: "Rough" },
+  { value: 3, emoji: "\u{1F610}", label: "Okay" },
+  { value: 4, emoji: "\u{1F60A}", label: "Good" },
+  { value: 5, emoji: "\u{1F929}", label: "Amazing" },
+];
+
+const ENERGY_OPTIONS = [
+  { value: 1, label: "Empty", color: "#ef4444" },
+  { value: 2, label: "Low", color: "#f97316" },
+  { value: 3, label: "Medium", color: "#eab308" },
+  { value: 4, label: "High", color: "#22c55e" },
+  { value: 5, label: "Super", color: "#06b6d4" },
+];
+
+const QUOTES = [
   "The miracle isn't that I finished. The miracle is that I had the courage to start.",
-  "Run when you can, walk if you have to, crawl if you must — just never give up.",
-  "Every run is a small victory over the voice that says 'stay on the couch.'",
-  "The Dom Tower is waiting for you. 🏛️",
+  "Run when you can, walk if you have to, crawl if you must; just never give up.",
+  "Every run is a small victory over the voice that says stay on the couch.",
+  "The Dom Tower is waiting for you.",
   "You don't have to be great to start, but you have to start to be great.",
   "Pain is temporary. Pride is forever.",
   "Trust the training. Trust yourself.",
-  "31 mei — jouw dag. 💪",
-  "Kilometres don't lie. Every step counts.",
-  "You're stronger than you think."
+  "31 mei - jouw dag.",
+  "Kilometers don't lie. Every step counts.",
+  "You're stronger than you think.",
 ];
 
-/* ─── STATE ─── */
-let logs = {};
-try { logs = JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){}
-function persist(){ localStorage.setItem(KEY, JSON.stringify(logs)); }
+function getDaysUntilRace() { return Math.max(0, Math.ceil((RACE_DATE - new Date()) / 864e5)); }
+function getCurrentWeek() { const d = (new Date() - new Date("2026-04-13")) / 864e5; return Math.min(Math.max(1, Math.floor(d / 7) + 1), 7); }
 
-function daysLeft(){ return Math.max(0, Math.ceil((RACE - new Date())/864e5)); }
-function curWeek(){ const d=(new Date()-new Date("2026-04-14"))/864e5; return Math.min(Math.max(1,Math.floor(d/7)+1),7); }
-function quote(){ return QUOTES[Math.floor(Date.now()/864e5)%QUOTES.length]; }
+const ls = { fontSize: 11, fontWeight: 600, color: "#7ba1d4", letterSpacing: 1, textTransform: "uppercase", display: "block", marginBottom: 8 };
 
-/* ─── NAVIGATION ─── */
-let currentPage = "dashboard";
-const pages = { dashboard: document.getElementById("pg-dash"), plan: document.getElementById("pg-plan"), log: document.getElementById("pg-log") };
-const nav = document.getElementById("main-nav");
+function App() {
+  const [runLogs, setRunLogs] = useState(() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e) { return {}; } });
+  const [activeView, setActiveView] = useState("dashboard");
+  const [selectedRun, setSelectedRun] = useState(null);
+  const [logForm, setLogForm] = useState({ completed: null, distance: "", pace: "", mood: 0, energy: 0, pain: "", notes: "" });
 
-function showPage(name, fromRight){
-  Object.keys(pages).forEach(k=>{
-    const el = pages[k];
-    el.classList.remove("active","slide-left","hidden");
-    if(k === name){ el.classList.add("active"); el.scrollTop = 0; }
-    else if(k === currentPage && fromRight){ el.classList.add("slide-left"); }
-    else { el.classList.add("hidden"); }
-  });
-  nav.style.display = name === "log" ? "none" : "";
-  document.querySelectorAll(".nav-btn").forEach(b=>{
-    const t = b.dataset.nav;
-    b.style.color = t===name ? "#3b82f6" : "#4a6a8a";
-    b.style.fontWeight = t===name ? "600" : "400";
-  });
-  currentPage = name;
-}
+  const saveRunLog = useCallback((id, data) => {
+    const updated = { ...runLogs, [id]: data };
+    setRunLogs(updated);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  }, [runLogs]);
 
-document.querySelectorAll(".nav-btn").forEach(b=>{
-  b.addEventListener("click", ()=>{ showPage(b.dataset.nav, false); });
-});
+  const handleLogSubmit = useCallback(() => {
+    if (!selectedRun) return;
+    saveRunLog(selectedRun, { ...logForm, loggedAt: new Date().toISOString() });
+    setSelectedRun(null);
+  }, [selectedRun, logForm, saveRunLog]);
 
-/* ─── RENDER DASHBOARD ─── */
-function renderDash(){
-  const done = Object.values(logs).filter(l=>l.completed);
-  const totKm = done.reduce((s,l)=>s+(parseFloat(l.distance)||0),0);
-  const totRuns = done.length;
-  const avgM = totRuns ? (done.reduce((s,l)=>s+(l.mood||0),0)/totRuns).toFixed(1) : "—";
-  const pct = Math.round((totRuns/14)*100);
-  const days = daysLeft();
-  const wk = curWeek();
+  const openLog = useCallback((runId, existingLog) => {
+    setSelectedRun(runId);
+    if (existingLog) { setLogForm(existingLog); }
+    else { const r = ALL_RUNS.find(x => x.id === runId); setLogForm({ completed: null, distance: r?.distance || "", pace: "", mood: 0, energy: 0, pain: "", notes: "" }); }
+  }, []);
 
-  let html = `<div class="mx">
-    <header style="padding:28px 0 12px;text-align:center" class="fu">
-      <div style="font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#4a8fe7;margin-bottom:4px">Training Tracker</div>
-      <h1 class="serif" style="font-size:26px;font-weight:700;color:#e8edf5;line-height:1.2">Utrecht Half Marathon</h1>
-      <div style="font-size:13px;color:#6b8db5">31 mei 2026 · Goal: sub 2:00:00</div>
-    </header>
+  const done = Object.values(runLogs).filter(l => l.completed === true);
+  const totalKm = done.reduce((s, l) => s + (parseFloat(l.distance) || 0), 0);
+  const totalRuns = done.length;
+  const avgMood = totalRuns ? (done.reduce((s, l) => s + (l.mood || 0), 0) / totalRuns).toFixed(1) : "-";
+  const daysLeft = getDaysUntilRace();
+  const cw = getCurrentWeek();
+  const quote = QUOTES[Math.floor(Date.now() / 86400000) % QUOTES.length];
+  const pct = Math.round((totalRuns / 14) * 100);
 
-    <div class="fu fu1" style="background:linear-gradient(135deg,#1a2744,#1e3a5f);border-radius:16px;padding:24px 20px;margin-top:16px;border:1px solid rgba(74,143,231,.15);position:relative;overflow:hidden">
-      <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(59,130,246,.15),transparent 70%)"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div>
-          <div class="serif" style="font-size:48px;font-weight:700;color:#e8edf5;line-height:1">${days}</div>
-          <div style="font-size:13px;color:#7ba1d4;margin-top:4px">days to race</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:13px;color:#7ba1d4">Week ${wk} of 7</div>
-          <div style="margin-top:8px;background:rgba(255,255,255,.08);border-radius:100px;height:8px;width:120px;overflow:hidden">
-            <div style="height:100%;border-radius:100px;width:${pct}%;background:linear-gradient(90deg,#3b82f6,#06b6d4);transition:width .6s ease"></div>
-          </div>
-          <div style="font-size:11px;color:#5a7ea8;margin-top:4px">${totRuns}/14 runs · ${pct}%</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="fu fu2" style="margin-top:14px;padding:14px 18px;border-radius:12px;background:rgba(59,130,246,.06);border-left:3px solid #3b82f6;font-size:13px;font-style:italic;color:#8eadcf;line-height:1.5">
-      "${quote()}"
-    </div>
-
-    <div class="fu fu3" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:16px">
-      <div style="background:rgba(255,255,255,.03);border-radius:12px;padding:14px 12px;border:1px solid rgba(255,255,255,.05);text-align:center">
-        <div style="font-size:18px;margin-bottom:4px">📏</div>
-        <div style="font-size:18px;font-weight:600;color:#e8edf5">${totKm.toFixed(1)}</div>
-        <div style="font-size:11px;color:#5a7ea8;margin-top:2px">Total km</div>
-      </div>
-      <div style="background:rgba(255,255,255,.03);border-radius:12px;padding:14px 12px;border:1px solid rgba(255,255,255,.05);text-align:center">
-        <div style="font-size:18px;margin-bottom:4px">😊</div>
-        <div style="font-size:18px;font-weight:600;color:#e8edf5">${avgM}</div>
-        <div style="font-size:11px;color:#5a7ea8;margin-top:2px">Avg mood</div>
-      </div>
-      <div style="background:rgba(255,255,255,.03);border-radius:12px;padding:14px 12px;border:1px solid rgba(255,255,255,.05);text-align:center">
-        <div style="font-size:18px;margin-bottom:4px">⚡</div>
-        <div style="font-size:18px;font-weight:600;color:#e8edf5">5:41</div>
-        <div style="font-size:11px;color:#5a7ea8;margin-top:2px">Target pace</div>
-      </div>
-    </div>`;
-
-  /* Bar chart */
-  if(totRuns > 0){
-    const maxKm = Math.max(...ALL.map(r=>r.km), ...done.map(l=>parseFloat(l.distance)||0));
-    html += `<div class="fu fu4" style="margin-top:24px">
-      <h3 style="font-size:14px;font-weight:600;color:#7ba1d4;margin-bottom:12px;letter-spacing:.5px">Distance Progress</h3>
-      <div style="background:rgba(255,255,255,.02);border-radius:12px;padding:12px 8px;border:1px solid rgba(255,255,255,.04)">
-        <div class="bar-chart">`;
-    ALL.forEach(r=>{
-      const l = logs[r.id];
-      const ph = (r.km/maxKm*100);
-      const ah = l?.completed ? ((parseFloat(l.distance)||0)/maxKm*100) : 0;
-      html += `<div class="bar-group">
-        <div class="bars">
-          <div class="bar planned" style="height:${ph}%"></div>
-          <div class="bar actual" style="height:${ah}%"></div>
-        </div>
-        <div class="lbl-x">W${r.id[1]}</div>
-      </div>`;
-    });
-    html += `</div></div></div>`;
-  }
-
-  /* Mood trend */
-  const moodData = ALL.map(r=>logs[r.id]).filter(l=>l&&l.completed&&l.mood);
-  if(moodData.length >= 2){
-    html += `<div style="margin-top:20px">
-      <h3 style="font-size:14px;font-weight:600;color:#7ba1d4;margin-bottom:12px;letter-spacing:.5px">Mood & Energy Trend</h3>
-      <div style="background:rgba(255,255,255,.02);border-radius:12px;padding:16px 12px;border:1px solid rgba(255,255,255,.04)">
-        <div style="display:flex;align-items:flex-end;gap:8px;height:80px">`;
-    moodData.forEach((l,i)=>{
-      const mh = (l.mood/5)*100;
-      const eh = ((l.energy||0)/5)*100;
-      html += `<div style="flex:1;display:flex;gap:3px;align-items:flex-end;height:100%">
-        <div style="flex:1;height:${mh}%;background:rgba(139,92,246,.4);border-radius:3px 3px 0 0;transition:height .4s"></div>
-        <div style="flex:1;height:${eh}%;background:rgba(6,182,212,.4);border-radius:3px 3px 0 0;transition:height .4s"></div>
-      </div>`;
-    });
-    html += `</div>
-        <div style="display:flex;gap:16px;margin-top:10px;justify-content:center">
-          <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#6b8db5"><span style="width:10px;height:10px;border-radius:2px;background:rgba(139,92,246,.5);display:inline-block"></span> Mood</div>
-          <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#6b8db5"><span style="width:10px;height:10px;border-radius:2px;background:rgba(6,182,212,.5);display:inline-block"></span> Energy</div>
-        </div>
-      </div></div>`;
-  }
-
-  if(totRuns === 0){
-    html += `<button class="fu fu4" onclick="showPage('plan',false)" style="width:100%;margin-top:24px;padding:14px 0;border-radius:12px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:15px;font-weight:600;box-shadow:0 4px 20px rgba(59,130,246,.25)">Start Training →</button>`;
-  }
-
-  html += `</div>`;
-  pages.dashboard.innerHTML = html;
-}
-
-/* ─── RENDER PLAN ─── */
-function renderPlan(){
-  const wk = curWeek();
-  let html = `<div class="mx">
-    <header style="padding:28px 0 12px;text-align:center">
-      <div style="font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#4a8fe7;margin-bottom:4px">Training Tracker</div>
-      <h1 class="serif" style="font-size:26px;font-weight:700;color:#e8edf5;line-height:1.2">Utrecht Half Marathon</h1>
-      <div style="font-size:13px;color:#6b8db5">31 mei 2026 · Goal: sub 2:00:00</div>
-    </header>
-    <div style="margin-top:20px">`;
-
-  PLAN.forEach(w=>{
-    const isCur = w.w === wk;
-    html += `<div style="margin-bottom:22px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
-          background:${isCur?"linear-gradient(135deg,#3b82f6,#06b6d4)":"rgba(255,255,255,.06)"};
-          color:${isCur?"#fff":"#6b8db5"}">${w.w}</div>
-        <div>
-          <span style="font-size:14px;font-weight:600;color:${isCur?"#e8edf5":"#7ba1d4"}">${w.l}</span>
-          ${isCur?'<span class="pill now">NOW</span>':""}
-        </div>
-      </div>`;
-
-    w.runs.forEach(r=>{
-      const l = logs[r.id];
-      const done = l?.completed===true;
-      const skip = l?.completed===false;
-      const cls = done?"done":skip?"skip":"";
-      const isRace = r.type.includes("RACE");
-      html += `<div class="card ${cls}" style="margin-left:38px" data-run="${r.id}">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span class="pill ${isRace?"gold":"blue"}">${r.type}</span>
-              <span style="font-size:12px;color:#5a7ea8">${r.day}</span>
-            </div>
-            <div style="font-size:13px;color:#8eadcf;margin-top:6px;line-height:1.4">${r.desc}</div>
-          </div>
-          <div style="text-align:right;flex-shrink:0;margin-left:12px">
-            <div style="font-size:16px;font-weight:600;color:#e8edf5">${r.km} km</div>
-            <div style="font-size:11px;color:#5a7ea8">${r.pace}/km</div>
-          </div>
-        </div>`;
-      if(done && l){
-        const me = MOODS.find(m=>m.v===l.mood);
-        html += `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.05);display:flex;gap:16px;font-size:12px;color:#7ba1d4">
-          <span>${l.distance} km</span><span>${l.pace}/km</span><span>${me?me.e:""}</span><span>⚡${l.energy}/5</span>
-          ${l.pain?'<span style="color:#ef4444">⚠️</span>':""}
-        </div>`;
-      }
-      if(skip) html += `<div style="margin-top:8px;font-size:12px;color:#ef4444;opacity:.7">Skipped</div>`;
-      if(!l) html += `<div style="margin-top:8px;font-size:11px;color:#4a6a8a">Tap to log this run →</div>`;
-      html += `</div>`;
-    });
-    html += `</div>`;
+  const chartData = ALL_RUNS.map(r => {
+    const l = runLogs[r.id];
+    return { name: "W" + r.id.charAt(1), planned: r.distance, actual: l?.completed ? (parseFloat(l.distance) || 0) : null, mood: l?.mood || null, energy: l?.energy || null };
   });
 
-  html += `</div></div>`;
-  pages.plan.innerHTML = html;
+  return React.createElement("div", { style: { background: "linear-gradient(165deg, #0a0f1e 0%, #0f172a 40%, #131d35 100%)", minHeight: "100vh", position: "relative", overflow: "hidden" } },
+    React.createElement("div", { style: { position: "fixed", top: "-20%", right: "-10%", width: "50vw", height: "50vw", background: "radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%)", pointerEvents: "none", zIndex: 0 } }),
+    React.createElement("div", { style: { position: "fixed", bottom: "-10%", left: "-10%", width: "40vw", height: "40vw", background: "radial-gradient(circle, rgba(14,165,233,0.04) 0%, transparent 70%)", pointerEvents: "none", zIndex: 0 } }),
 
-  pages.plan.querySelectorAll(".card[data-run]").forEach(el=>{
-    el.addEventListener("click", ()=>{ openLog(el.dataset.run); });
-  });
+    React.createElement("div", { style: { position: "relative", zIndex: 1, maxWidth: 480, margin: "0 auto", padding: "0 16px 100px" } },
+
+      /* Header */
+      React.createElement("header", { style: { paddingTop: 28, paddingBottom: 12, textAlign: "center" } },
+        React.createElement("div", { style: { fontSize: 11, fontWeight: 600, letterSpacing: 3, textTransform: "uppercase", color: "#4a8fe7", marginBottom: 4 } }, "Training Tracker"),
+        React.createElement("h1", { style: { fontFamily: "'Playfair Display', serif", fontSize: 26, fontWeight: 700, color: "#e8edf5", margin: "0 0 2px", lineHeight: 1.2 } }, "Utrecht Half Marathon"),
+        React.createElement("div", { style: { fontSize: 13, color: "#6b8db5" } }, "31 mei 2026 \u00B7 Goal: sub 2:00:00")
+      ),
+
+      /* DASHBOARD */
+      activeView === "dashboard" && React.createElement(React.Fragment, null,
+        /* Countdown */
+        React.createElement("div", { style: { background: "linear-gradient(135deg, #1a2744 0%, #1e3a5f 100%)", borderRadius: 16, padding: "24px 20px", marginTop: 16, border: "1px solid rgba(74,143,231,0.15)", position: "relative", overflow: "hidden" } },
+          React.createElement("div", { style: { position: "absolute", top: -20, right: -20, width: 100, height: 100, background: "radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)" } }),
+          React.createElement("div", { style: { display: "flex", alignItems: "center", justifyContent: "space-between" } },
+            React.createElement("div", null,
+              React.createElement("div", { style: { fontSize: 48, fontWeight: 700, color: "#e8edf5", fontFamily: "'Playfair Display', serif", lineHeight: 1 } }, daysLeft),
+              React.createElement("div", { style: { fontSize: 13, color: "#7ba1d4", marginTop: 4 } }, "days to race")
+            ),
+            React.createElement("div", { style: { textAlign: "right" } },
+              React.createElement("div", { style: { fontSize: 13, color: "#7ba1d4" } }, "Week " + cw + " of 7"),
+              React.createElement("div", { style: { marginTop: 8, background: "rgba(255,255,255,0.08)", borderRadius: 100, height: 8, width: 120, overflow: "hidden" } },
+                React.createElement("div", { style: { height: "100%", borderRadius: 100, width: pct + "%", background: "linear-gradient(90deg, #3b82f6, #06b6d4)", transition: "width 0.6s ease" } })
+              ),
+              React.createElement("div", { style: { fontSize: 11, color: "#5a7ea8", marginTop: 4 } }, totalRuns + "/14 runs \u00B7 " + pct + "%")
+            )
+          )
+        ),
+
+        /* Quote */
+        React.createElement("div", { style: { marginTop: 14, padding: "14px 18px", borderRadius: 12, background: "rgba(59,130,246,0.06)", borderLeft: "3px solid #3b82f6", fontSize: 13, fontStyle: "italic", color: "#8eadcf", lineHeight: 1.5 } }, '"' + quote + '"'),
+
+        /* Stats */
+        React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginTop: 16 } },
+          [{ l: "Total km", v: totalKm.toFixed(1), i: "\u{1F4CF}" }, { l: "Avg mood", v: avgMood, i: "\u{1F60A}" }, { l: "Target pace", v: "5:41/km", i: "\u26A1" }].map((s, idx) =>
+            React.createElement("div", { key: idx, style: { background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: "14px 12px", border: "1px solid rgba(255,255,255,0.05)", textAlign: "center" } },
+              React.createElement("div", { style: { fontSize: 18, marginBottom: 4 } }, s.i),
+              React.createElement("div", { style: { fontSize: 18, fontWeight: 600, color: "#e8edf5" } }, s.v),
+              React.createElement("div", { style: { fontSize: 11, color: "#5a7ea8", marginTop: 2 } }, s.l)
+            )
+          )
+        ),
+
+        /* Bar chart */
+        totalRuns > 0 && React.createElement("div", { style: { marginTop: 24 } },
+          React.createElement("h3", { style: { fontSize: 14, fontWeight: 600, color: "#7ba1d4", marginBottom: 12 } }, "Distance Progress"),
+          React.createElement("div", { style: { background: "rgba(255,255,255,0.02)", borderRadius: 12, padding: "16px 8px 8px", border: "1px solid rgba(255,255,255,0.04)" } },
+            React.createElement(ResponsiveContainer, { width: "100%", height: 160 },
+              React.createElement(BarChart, { data: chartData, barGap: 2 },
+                React.createElement(XAxis, { dataKey: "name", tick: { fill: "#4a6a8a", fontSize: 10 }, axisLine: false, tickLine: false }),
+                React.createElement(YAxis, { tick: { fill: "#4a6a8a", fontSize: 10 }, axisLine: false, tickLine: false, width: 28 }),
+                React.createElement(Tooltip, { contentStyle: { background: "#1a2744", border: "1px solid #2a4060", borderRadius: 8, fontSize: 12, color: "#c8d6e5" } }),
+                React.createElement(Bar, { dataKey: "planned", fill: "rgba(59,130,246,0.2)", radius: [4, 4, 0, 0], name: "Planned" }),
+                React.createElement(Bar, { dataKey: "actual", fill: "#3b82f6", radius: [4, 4, 0, 0], name: "Actual" })
+              )
+            )
+          )
+        ),
+
+        /* Mood chart */
+        totalRuns >= 2 && React.createElement("div", { style: { marginTop: 20 } },
+          React.createElement("h3", { style: { fontSize: 14, fontWeight: 600, color: "#7ba1d4", marginBottom: 12 } }, "Mood & Energy Trend"),
+          React.createElement("div", { style: { background: "rgba(255,255,255,0.02)", borderRadius: 12, padding: "16px 8px 8px", border: "1px solid rgba(255,255,255,0.04)" } },
+            React.createElement(ResponsiveContainer, { width: "100%", height: 130 },
+              React.createElement(AreaChart, { data: chartData.filter(d => d.mood !== null) },
+                React.createElement(XAxis, { dataKey: "name", tick: { fill: "#4a6a8a", fontSize: 10 }, axisLine: false, tickLine: false }),
+                React.createElement(YAxis, { domain: [0, 5], tick: { fill: "#4a6a8a", fontSize: 10 }, axisLine: false, tickLine: false, width: 24 }),
+                React.createElement(Tooltip, { contentStyle: { background: "#1a2744", border: "1px solid #2a4060", borderRadius: 8, fontSize: 12, color: "#c8d6e5" } }),
+                React.createElement(Area, { type: "monotone", dataKey: "mood", stroke: "#8b5cf6", fill: "rgba(139,92,246,0.15)", strokeWidth: 2, name: "Mood" }),
+                React.createElement(Area, { type: "monotone", dataKey: "energy", stroke: "#06b6d4", fill: "rgba(6,182,212,0.1)", strokeWidth: 2, name: "Energy" })
+              )
+            )
+          )
+        )
+      ),
+
+      /* PLAN VIEW */
+      activeView === "plan" && React.createElement("div", { style: { marginTop: 20 } },
+        TRAINING_PLAN.map(week =>
+          React.createElement("div", { key: week.week, style: { marginBottom: 20 } },
+            React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10, marginBottom: 10 } },
+              React.createElement("div", { style: { width: 28, height: 28, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, background: week.week === cw ? "linear-gradient(135deg, #3b82f6, #06b6d4)" : "rgba(255,255,255,0.06)", color: week.week === cw ? "#fff" : "#6b8db5" } }, week.week),
+              React.createElement("div", null,
+                React.createElement("span", { style: { fontSize: 14, fontWeight: 600, color: week.week === cw ? "#e8edf5" : "#7ba1d4" } }, week.label),
+                week.week === cw && React.createElement("span", { style: { fontSize: 10, marginLeft: 8, padding: "2px 8px", borderRadius: 100, background: "rgba(59,130,246,0.2)", color: "#60a5fa" } }, "NOW")
+              )
+            ),
+            week.runs.map(run => {
+              const log = runLogs[run.id];
+              const ic = log?.completed === true;
+              const is = log?.completed === false;
+              const isRace = run.type === "RACE DAY";
+              return React.createElement("div", { key: run.id, onClick: () => openLog(run.id, log), style: { background: ic ? "rgba(34,197,94,0.06)" : is ? "rgba(239,68,68,0.05)" : "rgba(255,255,255,0.025)", border: "1px solid " + (ic ? "rgba(34,197,94,0.15)" : is ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.05)"), borderRadius: 12, padding: "14px 16px", marginBottom: 8, marginLeft: 38, cursor: "pointer" } },
+                React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start" } },
+                  React.createElement("div", null,
+                    React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 8 } },
+                      React.createElement("span", { style: { fontSize: 11, padding: "2px 8px", borderRadius: 6, background: isRace ? "rgba(234,179,8,0.15)" : "rgba(59,130,246,0.12)", color: isRace ? "#eab308" : "#60a5fa", fontWeight: 600 } }, run.type),
+                      React.createElement("span", { style: { fontSize: 12, color: "#5a7ea8" } }, run.day)
+                    ),
+                    React.createElement("div", { style: { fontSize: 13, color: "#8eadcf", marginTop: 6, lineHeight: 1.4 } }, run.desc)
+                  ),
+                  React.createElement("div", { style: { textAlign: "right", flexShrink: 0, marginLeft: 12 } },
+                    React.createElement("div", { style: { fontSize: 16, fontWeight: 600, color: "#e8edf5" } }, run.distance + " km"),
+                    React.createElement("div", { style: { fontSize: 11, color: "#5a7ea8" } }, run.targetPace + "/km")
+                  )
+                ),
+                ic && log && React.createElement("div", { style: { marginTop: 10, paddingTop: 10, borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", gap: 16, fontSize: 12, color: "#7ba1d4" } },
+                  React.createElement("span", null, log.distance + " km"),
+                  React.createElement("span", null, log.pace + "/km"),
+                  React.createElement("span", null, (MOOD_OPTIONS.find(m => m.value === log.mood) || {}).emoji || ""),
+                  React.createElement("span", null, "\u26A1" + log.energy + "/5"),
+                  log.pain && React.createElement("span", { style: { color: "#ef4444" } }, "\u26A0\uFE0F")
+                ),
+                is && React.createElement("div", { style: { marginTop: 8, fontSize: 12, color: "#ef4444", opacity: 0.7 } }, "Skipped"),
+                !log && React.createElement("div", { style: { marginTop: 8, fontSize: 11, color: "#4a6a8a" } }, "Tap to log this run \u2192")
+              );
+            })
+          )
+        )
+      ),
+
+      /* MODAL */
+      selectedRun && (() => {
+        const run = ALL_RUNS.find(r => r.id === selectedRun);
+        return React.createElement("div", { style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center", backdropFilter: "blur(4px)" }, onClick: (e) => { if (e.target === e.currentTarget) setSelectedRun(null); } },
+          React.createElement("div", { style: { background: "linear-gradient(180deg, #152238 0%, #0f172a 100%)", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 480, padding: "24px 20px 32px", maxHeight: "85vh", overflowY: "auto", border: "1px solid rgba(255,255,255,0.08)", borderBottom: "none" } },
+            React.createElement("div", { style: { width: 40, height: 4, borderRadius: 100, background: "rgba(255,255,255,0.15)", margin: "0 auto 20px" } }),
+            React.createElement("h2", { style: { fontFamily: "'Playfair Display', serif", fontSize: 20, color: "#e8edf5", margin: "0 0 4px" } }, run?.type),
+            React.createElement("p", { style: { fontSize: 13, color: "#6b8db5", margin: "0 0 20px" } }, run?.distance + " km \u00B7 Target " + run?.targetPace + "/km"),
+
+            /* Complete buttons */
+            React.createElement("div", { style: { marginBottom: 20 } },
+              React.createElement("label", { style: ls }, "Did you complete this run?"),
+              React.createElement("div", { style: { display: "flex", gap: 10 } },
+                [{ v: true, t: "Yes! \u2705", bg: "rgba(34,197,94,0.12)", bc: "rgba(34,197,94,0.3)", c: "#22c55e" }, { v: false, t: "No \u274C", bg: "rgba(239,68,68,0.1)", bc: "rgba(239,68,68,0.25)", c: "#ef4444" }].map(o =>
+                  React.createElement("button", { key: String(o.v), onClick: () => setLogForm(p => ({ ...p, completed: o.v })), style: { flex: 1, padding: "12px 0", borderRadius: 10, fontSize: 14, fontWeight: 600, background: logForm.completed === o.v ? o.bg : "rgba(255,255,255,0.03)", border: "2px solid " + (logForm.completed === o.v ? o.bc : "rgba(255,255,255,0.06)"), color: logForm.completed === o.v ? o.c : "#5a7ea8", transition: "all 0.2s" } }, o.t)
+                )
+              )
+            ),
+
+            /* Yes form */
+            logForm.completed === true && React.createElement(React.Fragment, null,
+              React.createElement("div", { style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18 } },
+                React.createElement("div", null, React.createElement("label", { style: ls }, "Distance (km)"), React.createElement("input", { type: "number", step: "0.1", value: logForm.distance, onChange: e => setLogForm(p => ({ ...p, distance: e.target.value })), placeholder: "e.g. 12.5" })),
+                React.createElement("div", null, React.createElement("label", { style: ls }, "Pace (min/km)"), React.createElement("input", { type: "text", value: logForm.pace, onChange: e => setLogForm(p => ({ ...p, pace: e.target.value })), placeholder: "e.g. 5:45" }))
+              ),
+              React.createElement("div", { style: { marginBottom: 18 } },
+                React.createElement("label", { style: ls }, "How did it feel?"),
+                React.createElement("div", { style: { display: "flex", gap: 6 } },
+                  MOOD_OPTIONS.map(m =>
+                    React.createElement("button", { key: m.value, onClick: () => setLogForm(p => ({ ...p, mood: m.value })), style: { flex: 1, padding: "10px 0", borderRadius: 10, fontSize: 22, background: logForm.mood === m.value ? "rgba(139,92,246,0.15)" : "rgba(255,255,255,0.03)", border: "2px solid " + (logForm.mood === m.value ? "rgba(139,92,246,0.35)" : "rgba(255,255,255,0.06)"), transition: "all 0.2s" } },
+                      m.emoji, React.createElement("div", { style: { fontSize: 9, color: logForm.mood === m.value ? "#a78bfa" : "#4a6a8a", marginTop: 2 } }, m.label)
+                    )
+                  )
+                )
+              ),
+              React.createElement("div", { style: { marginBottom: 18 } },
+                React.createElement("label", { style: ls }, "Energy Level"),
+                React.createElement("div", { style: { display: "flex", gap: 6 } },
+                  ENERGY_OPTIONS.map(e =>
+                    React.createElement("button", { key: e.value, onClick: () => setLogForm(p => ({ ...p, energy: e.value })), style: { flex: 1, padding: "10px 4px", borderRadius: 10, fontSize: 12, fontWeight: 600, background: logForm.energy === e.value ? e.color + "18" : "rgba(255,255,255,0.03)", border: "2px solid " + (logForm.energy === e.value ? e.color + "50" : "rgba(255,255,255,0.06)"), color: logForm.energy === e.value ? e.color : "#4a6a8a", transition: "all 0.2s" } }, e.label)
+                  )
+                )
+              ),
+              React.createElement("div", { style: { marginBottom: 18 } }, React.createElement("label", { style: ls }, "Pain / Injuries"), React.createElement("input", { type: "text", value: logForm.pain, onChange: e => setLogForm(p => ({ ...p, pain: e.target.value })), placeholder: "None, or describe" })),
+              React.createElement("div", { style: { marginBottom: 24 } }, React.createElement("label", { style: ls }, "Notes"), React.createElement("textarea", { value: logForm.notes, onChange: e => setLogForm(p => ({ ...p, notes: e.target.value })), placeholder: "How was the run?" }))
+            ),
+
+            /* No form */
+            logForm.completed === false && React.createElement("div", { style: { marginBottom: 24 } }, React.createElement("label", { style: ls }, "What happened?"), React.createElement("textarea", { value: logForm.notes, onChange: e => setLogForm(p => ({ ...p, notes: e.target.value })), placeholder: "Rest day, injury, busy schedule..." })),
+
+            /* Save */
+            logForm.completed !== null && React.createElement("button", { onClick: handleLogSubmit, style: { width: "100%", padding: "14px 0", borderRadius: 12, background: "linear-gradient(135deg, #3b82f6, #2563eb)", color: "#fff", fontSize: 15, fontWeight: 600, boxShadow: "0 4px 20px rgba(59,130,246,0.3)" } }, "Save Run Log")
+          )
+        );
+      })()
+    ),
+
+    /* NAV */
+    React.createElement("nav", { style: { position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, background: "linear-gradient(180deg, rgba(15,23,42,0.95) 0%, #0a0f1e 100%)", borderTop: "1px solid rgba(255,255,255,0.06)", backdropFilter: "blur(12px)" } },
+      React.createElement("div", { style: { display: "flex", maxWidth: 480, margin: "0 auto" } },
+        [{ id: "dashboard", label: "Dashboard", icon: "\u25C9" }, { id: "plan", label: "Training", icon: "\u25A4" }].map(tab =>
+          React.createElement("button", { key: tab.id, onClick: () => setActiveView(tab.id), style: { flex: 1, padding: "12px 0 10px", background: "transparent", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, color: activeView === tab.id ? "#3b82f6" : "#4a6a8a", fontSize: 11, fontWeight: activeView === tab.id ? 600 : 400, transition: "color 0.2s" } },
+            React.createElement("span", { style: { fontSize: 20, lineHeight: 1 } }, tab.icon), tab.label
+          )
+        )
+      )
+    )
+  );
 }
 
-/* ─── RENDER LOG PAGE ─── */
-let logState = {};
-function openLog(runId){
-  const run = ALL.find(r=>r.id===runId);
-  const existing = logs[runId];
-  logState = existing ? {...existing, _id:runId} : {completed:null, distance:run.km, pace:"", mood:0, energy:0, pain:"", notes:"", _id:runId};
-  renderLog();
-  showPage("log", true);
-}
-
-function renderLog(){
-  const run = ALL.find(r=>r.id===logState._id);
-  const isRace = run.type.includes("RACE");
-  const s = logState;
-
-  let html = `<div class="mx">
-    <button onclick="goBackToPlan()" style="display:flex;align-items:center;gap:6px;margin-top:24px;margin-bottom:20px;background:none;color:#4a8fe7;font-size:14px;font-weight:500;padding:6px 0">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-      Back to plan
-    </button>
-
-    <div class="fu" style="background:linear-gradient(135deg,#1a2744,#1e3a5f);border-radius:16px;padding:22px 20px;border:1px solid rgba(74,143,231,.15);margin-bottom:24px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div>
-          <span class="pill ${isRace?"gold":"blue"}">${run.type}</span>
-          <h2 class="serif" style="font-size:22px;color:#e8edf5;margin:10px 0 4px">${run.km} km</h2>
-          <p style="font-size:13px;color:#7ba1d4;line-height:1.4">${run.desc}</p>
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:12px;color:#5a7ea8">${run.day}</div>
-          <div style="font-size:14px;font-weight:600;color:#8eadcf;margin-top:4px">${run.pace}/km</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="fu fu1" style="margin-bottom:24px">
-      <div class="lbl">Did you complete this run?</div>
-      <div style="display:flex;gap:10px">
-        <button onclick="setCompleted(true)" style="flex:1;padding:13px 0;border-radius:10px;font-size:14px;font-weight:600;
-          background:${s.completed===true?"rgba(34,197,94,.12)":"rgba(255,255,255,.03)"};
-          border:2px solid ${s.completed===true?"rgba(34,197,94,.3)":"rgba(255,255,255,.06)"};
-          color:${s.completed===true?"#22c55e":"#5a7ea8"};transition:all .2s">Yes! ✅</button>
-        <button onclick="setCompleted(false)" style="flex:1;padding:13px 0;border-radius:10px;font-size:14px;font-weight:600;
-          background:${s.completed===false?"rgba(239,68,68,.1)":"rgba(255,255,255,.03)"};
-          border:2px solid ${s.completed===false?"rgba(239,68,68,.25)":"rgba(255,255,255,.06)"};
-          color:${s.completed===false?"#ef4444":"#5a7ea8"};transition:all .2s">No ❌</button>
-      </div>
-    </div>`;
-
-  if(s.completed === true){
-    html += `
-    <div class="fu" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:22px">
-      <div><div class="lbl">Distance (km)</div>
-        <input type="number" step="0.1" value="${s.distance}" onchange="logState.distance=this.value" placeholder="e.g. 12.5"/></div>
-      <div><div class="lbl">Pace (min/km)</div>
-        <input type="text" value="${s.pace}" onchange="logState.pace=this.value" placeholder="e.g. 5:45"/></div>
-    </div>
-
-    <div class="fu" style="margin-bottom:22px">
-      <div class="lbl">How did it feel?</div>
-      <div style="display:flex;gap:6px">`;
-    MOODS.forEach(m=>{
-      html += `<button class="mood-btn ${s.mood===m.v?"sel":""}" onclick="setMood(${m.v})">${m.e}<small style="color:${s.mood===m.v?"#a78bfa":"#4a6a8a"}">${m.l}</small></button>`;
-    });
-    html += `</div></div>
-
-    <div class="fu" style="margin-bottom:22px">
-      <div class="lbl">Energy Level</div>
-      <div style="display:flex;gap:6px">`;
-    NRG.forEach(e=>{
-      const sel = s.energy===e.v;
-      html += `<button class="opt-btn ${sel?"sel":""}" style="--sel-bg:${e.c}18;--sel-bc:${e.c}50;--sel-c:${e.c}" onclick="setEnergy(${e.v})">${e.l}</button>`;
-    });
-    html += `</div></div>
-
-    <div class="fu" style="margin-bottom:22px">
-      <div class="lbl">Pain / Injuries</div>
-      <input type="text" value="${s.pain||""}" onchange="logState.pain=this.value" placeholder="None, or describe (e.g. 'left knee tight')"/>
-    </div>
-
-    <div class="fu" style="margin-bottom:28px">
-      <div class="lbl">Notes</div>
-      <textarea onchange="logState.notes=this.value" placeholder="How was the run? Weather, route, anything...">${s.notes||""}</textarea>
-    </div>`;
-  }
-
-  if(s.completed === false){
-    html += `<div class="fu" style="margin-bottom:28px">
-      <div class="lbl">What happened?</div>
-      <textarea onchange="logState.notes=this.value" placeholder="Rest day, injury, busy schedule...">${s.notes||""}</textarea>
-    </div>`;
-  }
-
-  if(s.completed !== null){
-    html += `<button onclick="saveLog()" style="width:100%;padding:15px 0;border-radius:12px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:15px;font-weight:600;box-shadow:0 4px 20px rgba(59,130,246,.3);margin-bottom:20px">Save Run Log</button>`;
-  }
-
-  html += `</div>`;
-  pages.log.innerHTML = html;
-}
-
-/* ─── ACTIONS ─── */
-window.setCompleted = function(v){ logState.completed = v; renderLog(); };
-window.setMood = function(v){ logState.mood = v; renderLog(); };
-window.setEnergy = function(v){ logState.energy = v; renderLog(); };
-
-window.saveLog = function(){
-  const id = logState._id;
-  const data = {...logState, loggedAt: new Date().toISOString()};
-  delete data._id;
-  logs[id] = data;
-  persist();
-  renderPlan();
-  renderDash();
-  showPage("plan", false);
-};
-
-window.goBackToPlan = function(){
-  showPage("plan", false);
-};
-
-/* ─── INIT ─── */
-renderDash();
-renderPlan();
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
 </script>
 </body>
 </html>
