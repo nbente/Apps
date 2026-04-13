@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Cyclustracker">
+<meta name="theme-color" content="#F5EDE4">
+<title>Cyclustracker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌸</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23F5EDE4' width='100' height='100' rx='20'/><text x='50' y='62' text-anchor='middle' font-size='52'>🌸</text></svg>">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: linear-gradient(180deg, #F5EDE4 0%, #FBF7F2 40%, #F5EDE4 100%);
+    color: #4A3F35;
+    min-height: 100vh;
+    min-height: 100dvh;
+    max-width: 480px;
+    margin: 0 auto;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .header { padding: 28px 24px 12px; text-align: center; }
+  .header h1 { font-family: 'Playfair Display', Georgia, serif; font-size: 26px; color: #5C4F3D; letter-spacing: -0.5px; }
+  .header p { font-size: 12px; color: #A89880; margin-top: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+  /* Nav */
+  .nav { display: flex; gap: 6px; padding: 0 16px 12px; justify-content: center; }
+  .nav button {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 8px 20px; border: none; border-radius: 14px; background: transparent;
+    cursor: pointer; font-family: inherit; transition: all 0.2s;
+  }
+  .nav button.active { background: #E8DDD3; box-shadow: inset 0 1px 3px rgba(0,0,0,0.06); }
+  .nav button .icon { font-size: 18px; }
+  .nav button .label { font-size: 11px; color: #6B5D4F; font-weight: 500; }
+
+  .content { padding: 0 16px; }
+
+  /* Date nav */
+  .date-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding: 8px 0; }
+  .date-arrow {
+    width: 40px; height: 40px; border: 1.5px solid #D9CFC3; border-radius: 12px;
+    background: white; font-size: 18px; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; color: #6B5D4F; font-family: inherit;
+  }
+  .date-display { text-align: center; }
+  .date-main { font-size: 18px; font-weight: 600; color: #4A3F35; }
+  .date-sub { font-size: 12px; color: #A89880; }
+
+  /* Bleeding */
+  .bleeding-btn {
+    width: 100%; display: flex; align-items: center; gap: 10px;
+    padding: 14px 18px; border: 1.5px dashed #D9CFC3; border-radius: 16px;
+    background: white; cursor: pointer; margin-bottom: 12px; font-size: 15px;
+    color: #6B5D4F; font-family: inherit; transition: all 0.2s;
+  }
+  .bleeding-btn.active { background: #FDE8E8; border-color: #E8A0A0; border-style: solid; color: #8B4545; }
+  .bleeding-btn .dot { font-size: 20px; }
+
+  /* Cards */
+  .card {
+    background: white; border-radius: 18px; padding: 16px 18px; margin-bottom: 12px;
+    box-shadow: 0 1px 4px rgba(90,70,50,0.06); border: 1px solid #EDE5DA;
+  }
+  .card-label { font-size: 14px; font-weight: 600; color: #6B5D4F; margin-bottom: 12px; letter-spacing: 0.3px; }
+
+  /* Emoji row */
+  .emoji-row { display: flex; gap: 8px; justify-content: space-between; }
+  .emoji-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 10px 0; border: 1.5px solid transparent; border-radius: 14px;
+    background: #FAF6F1; cursor: pointer; flex: 1; transition: all 0.2s; font-family: inherit;
+  }
+  .emoji-btn.active { transform: scale(1.1); }
+  .emoji-btn .em { font-size: 24px; }
+  .emoji-btn .score { font-size: 11px; color: #A89880; font-weight: 500; }
+
+  /* Symptoms */
+  .symptom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .symptom-btn {
+    display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+    border: 1.5px solid #EDE5DA; border-radius: 12px; background: #FAF6F1;
+    cursor: pointer; transition: all 0.2s; font-family: inherit; font-size: 12px; color: #6B5D4F;
+  }
+  .symptom-btn.active { background: #E8DDD3; border-color: #C4B5A4; font-weight: 600; color: #4A3F35; }
+  .symptom-btn .si { font-size: 18px; }
+
+  /* Mucus */
+  .mucus-row { display: flex; gap: 8px; }
+  .mucus-btn {
+    flex: 1; padding: 10px 4px; border: 1.5px solid #EDE5DA; border-radius: 12px;
+    background: #FAF6F1; cursor: pointer; font-size: 11px; font-weight: 500;
+    color: #6B5D4F; text-align: center; transition: all 0.2s; font-family: inherit;
+  }
+  .mucus-btn.active { border-color: #B8A898; font-weight: 600; }
+
+  /* Notes */
+  .note-input {
+    width: 100%; border: 1.5px solid #EDE5DA; border-radius: 12px; padding: 12px 14px;
+    font-size: 14px; font-family: inherit; color: #4A3F35; background: #FAF6F1;
+    resize: vertical; outline: none;
+  }
+  .note-input:focus { border-color: #C4B5A4; }
+
+  /* Calendar */
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .cal-title { font-size: 18px; font-weight: 600; color: #4A3F35; }
+  .cal-daynames { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 8px; }
+  .cal-dayname { text-align: center; font-size: 11px; font-weight: 600; color: #A89880; text-transform: uppercase; letter-spacing: 0.5px; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-cell {
+    aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border-radius: 12px; border: 2px solid transparent; background: transparent; cursor: pointer;
+    font-family: inherit; padding: 0; transition: all 0.15s; position: relative;
+  }
+  .cal-cell.selected { background: #E8DDD3; box-shadow: inset 0 1px 3px rgba(0,0,0,0.08); }
+  .cal-cell.today { border-color: #C4956A; }
+  .cal-cell .day { font-size: 14px; font-weight: 500; color: #4A3F35; }
+  .cal-cell .cdot { font-size: 8px; line-height: 1; margin-top: 2px; }
+  .cal-cell .mood-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 2px; }
+  .cal-legend { display: flex; gap: 20px; justify-content: center; margin-top: 20px; padding: 12px 0; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #8B7D6B; }
+
+  /* Trends */
+  .trends-title { font-size: 18px; font-weight: 600; color: #4A3F35; margin-bottom: 16px; text-align: center; }
+  .trend-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .trend-label { font-size: 14px; font-weight: 600; color: #6B5D4F; }
+  .trend-avg { font-size: 13px; font-weight: 600; }
+  .trend-chart { display: flex; align-items: flex-end; gap: 2px; height: 60px; }
+  .trend-bar-wrap { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative; }
+  .trend-bar { width: 100%; border-radius: 3px; transition: height 0.3s; min-width: 4px; }
+  .trend-bleed-dot { width: 4px; height: 4px; border-radius: 50%; background: #D46B6B; position: absolute; bottom: -8px; }
+  .trend-dates { display: flex; justify-content: space-between; margin-top: 10px; }
+  .trend-date-label { font-size: 10px; color: #A89880; }
+
+  /* Frequency */
+  .freq-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .freq-icon { font-size: 16px; width: 24px; text-align: center; }
+  .freq-label { font-size: 12px; color: #6B5D4F; width: 100px; flex-shrink: 0; }
+  .freq-bar-bg { flex: 1; height: 8px; background: #F0E8DE; border-radius: 4px; overflow: hidden; }
+  .freq-bar-fill { height: 100%; background: #C4956A; border-radius: 4px; transition: width 0.3s; }
+  .freq-count { font-size: 12px; color: #A89880; font-weight: 600; width: 28px; text-align: right; }
+  .no-data { font-size: 13px; color: #A89880; text-align: center; padding: 12px 0; }
+
+  /* Settings */
+  .settings-btn-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .settings-btn {
+    flex: 1; padding: 14px 12px; border: 1.5px solid #D9CFC3; border-radius: 14px;
+    background: white; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500;
+    color: #6B5D4F; text-align: center; transition: all 0.2s;
+  }
+  .settings-btn:active { background: #E8DDD3; }
+  .settings-btn .sicon { font-size: 22px; display: block; margin-bottom: 4px; }
+  .danger-btn { border-color: #E8A0A0; color: #8B4545; }
+  .danger-btn:active { background: #FDE8E8; }
+  .file-input { display: none; }
+  .stats-row { display: flex; justify-content: space-around; margin-bottom: 16px; }
+  .stat { text-align: center; }
+  .stat-val { font-size: 24px; font-weight: 700; color: #5C4F3D; }
+  .stat-label { font-size: 11px; color: #A89880; margin-top: 2px; }
+
+  .spacer { height: 40px; }
+
+  /* Hidden views */
+  .view { display: none; }
+  .view.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🌸 Cyclustracker</h1>
+  <p id="headerSub">Jouw dagelijks overzicht</p>
+</div>
+
+<div class="nav" id="nav"></div>
+<div class="content">
+  <div class="view active" id="view-log"></div>
+  <div class="view" id="view-calendar"></div>
+  <div class="view" id="view-trends"></div>
+  <div class="view" id="view-settings"></div>
+</div>
+
+<input type="file" id="importFile" class="file-input" accept=".json">
+
+<script>
+const CATEGORIES = [
+  { key: "mood", label: "Stemming", emoji: ["😢","😕","😐","🙂","😊"], color: "#C4956A" },
+  { key: "energy", label: "Energie", emoji: ["🪫","😴","🚶","💪","⚡"], color: "#A8B5A0" },
+  { key: "sleep", label: "Slaapkwaliteit", emoji: ["😩","😣","😶","😌","😴"], color: "#8BA4B8" },
+  { key: "appetite", label: "Eetlust", emoji: ["🚫","📉","🍽️","😋","🤤"], color: "#D4A574" },
+];
+const SYMPTOMS = [
+  { key: "bloating", label: "Opgeblazen", icon: "🫧" },
+  { key: "headache", label: "Hoofdpijn", icon: "🤕" },
+  { key: "breast", label: "Gevoelige borsten", icon: "💗" },
+  { key: "skin", label: "Huidproblemen", icon: "✨" },
+  { key: "cramps", label: "Krampen", icon: "🌀" },
+  { key: "irritable", label: "Prikkelbaar", icon: "⚡" },
+  { key: "sad", label: "Verdrietig", icon: "🌧️" },
+  { key: "anxious", label: "Onrustig", icon: "🍃" },
+];
+const MUCUS = [
+  { key: "none", label: "Geen", color: "#E8DDD3" },
+  { key: "sticky", label: "Plakkerig", color: "#DDD0C0" },
+  { key: "creamy", label: "Romig", color: "#D4C4AE" },
+  { key: "eggwhite", label: "Helder/rekbaar", color: "#C9B99A" },
+];
+
+let entries = {};
+let selectedDate = todayKey();
+let currentView = "log";
+
+function todayKey() { return new Date().toISOString().split("T")[0]; }
+function dateKey(d) { return d.toISOString().split("T")[0]; }
+function parseDate(k) { return new Date(k + "T12:00:00"); }
+
+function formatDate(d) {
+  const days = ["zo","ma","di","wo","do","vr","za"];
+  const months = ["jan","feb","mrt","apr","mei","jun","jul","aug","sep","okt","nov","dec"];
+  return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
+}
+function formatMonthYear(d) {
+  const months = ["Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December"];
+  return `${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// Storage
+function loadEntries() {
+  try { const d = localStorage.getItem("cycle-entries"); if (d) entries = JSON.parse(d); } catch(e) {}
+}
+function saveEntries() {
+  try { localStorage.setItem("cycle-entries", JSON.stringify(entries)); } catch(e) {}
+}
+function getCurrent() { return entries[selectedDate] || {}; }
+function updateField(field, value) {
+  if (!entries[selectedDate]) entries[selectedDate] = {};
+  entries[selectedDate][field] = value;
+  saveEntries();
+}
+
+// Nav
+function renderNav() {
+  const tabs = [
+    { key: "log", label: "Vandaag", icon: "📝" },
+    { key: "calendar", label: "Kalender", icon: "📅" },
+    { key: "trends", label: "Patronen", icon: "📊" },
+    { key: "settings", label: "Data", icon: "⚙️" },
+  ];
+  document.getElementById("nav").innerHTML = tabs.map(t =>
+    `<button class="${currentView === t.key ? 'active' : ''}" onclick="switchView('${t.key}')">
+      <span class="icon">${t.icon}</span><span class="label">${t.label}</span>
+    </button>`
+  ).join("");
+}
+
+function switchView(v) {
+  currentView = v;
+  document.querySelectorAll(".view").forEach(el => el.classList.remove("active"));
+  document.getElementById("view-" + v).classList.add("active");
+  renderNav();
+  if (v === "log") renderLog();
+  else if (v === "calendar") renderCalendar();
+  else if (v === "trends") renderTrends();
+  else if (v === "settings") renderSettings();
+}
+
+// LOG VIEW
+function renderLog() {
+  const c = getCurrent();
+  const d = parseDate(selectedDate);
+  const isToday = selectedDate === todayKey();
+
+  let html = `
+    <div class="date-nav">
+      <button class="date-arrow" onclick="prevDay()">←</button>
+      <div class="date-display">
+        <div class="date-main">${isToday ? "Vandaag" : formatDate(d)}</div>
+        ${isToday ? `<div class="date-sub">${formatDate(d)}</div>` : ""}
+      </div>
+      <button class="date-arrow" onclick="nextDay()">→</button>
+    </div>
+
+    <button class="bleeding-btn ${c.bleeding ? 'active' : ''}" onclick="toggleBleeding()">
+      <span class="dot">${c.bleeding ? '🩸' : '○'}</span>
+      <span>${c.bleeding ? 'Bloeding vandaag' : 'Geen bloeding'}</span>
+    </button>
+  `;
+
+  CATEGORIES.forEach(cat => {
+    html += `<div class="card"><div class="card-label">${cat.label}</div><div class="emoji-row">`;
+    cat.emoji.forEach((em, i) => {
+      const active = c[cat.key] === i + 1;
+      const style = active ? `background:${cat.color}33;border-color:${cat.color};transform:scale(1.15)` : "";
+      html += `<button class="emoji-btn ${active ? 'active' : ''}" style="${style}" onclick="setScore('${cat.key}',${i+1})">
+        <span class="em">${em}</span><span class="score">${i+1}</span>
+      </button>`;
+    });
+    html += `</div></div>`;
+  });
+
+  html += `<div class="card"><div class="card-label">Symptomen</div><div class="symptom-grid">`;
+  SYMPTOMS.forEach(s => {
+    const active = (c.symptoms || []).includes(s.key);
+    html += `<button class="symptom-btn ${active ? 'active' : ''}" onclick="toggleSymptom('${s.key}')">
+      <span class="si">${s.icon}</span><span>${s.label}</span>
+    </button>`;
+  });
+  html += `</div></div>`;
+
+  html += `<div class="card"><div class="card-label">Cervicaal slijm</div><div class="mucus-row">`;
+  MUCUS.forEach(m => {
+    const active = c.mucus === m.key;
+    const style = active ? `background:${m.color};border-color:#B8A898;font-weight:600` : "";
+    html += `<button class="mucus-btn ${active ? 'active' : ''}" style="${style}" onclick="setMucus('${m.key}')">${m.label}</button>`;
+  });
+  html += `</div></div>`;
+
+  html += `<div class="card"><div class="card-label">Notities</div>
+    <textarea class="note-input" rows="3" placeholder="Hoe voel je je vandaag? Bijzonderheden..." 
+      oninput="saveNote(this.value)">${c.note || ''}</textarea>
+  </div>`;
+
+  html += `<div class="spacer"></div>`;
+  document.getElementById("view-log").innerHTML = html;
+}
+
+function prevDay() {
+  const d = parseDate(selectedDate);
+  d.setDate(d.getDate() - 1);
+  selectedDate = dateKey(d);
+  renderLog();
+}
+function nextDay() {
+  const d = parseDate(selectedDate);
+  d.setDate(d.getDate() + 1);
+  if (d <= new Date()) { selectedDate = dateKey(d); renderLog(); }
+}
+function toggleBleeding() { updateField("bleeding", !getCurrent().bleeding); renderLog(); }
+function setScore(key, val) { updateField(key, val); renderLog(); }
+function toggleSymptom(key) {
+  const c = getCurrent();
+  const syms = c.symptoms || [];
+  updateField("symptoms", syms.includes(key) ? syms.filter(s => s !== key) : [...syms, key]);
+  renderLog();
+}
+function setMucus(key) { updateField("mucus", key); renderLog(); }
+function saveNote(val) { updateField("note", val); }
+
+// CALENDAR VIEW
+let calMonth = new Date().getMonth();
+let calYear = new Date().getFullYear();
+
+function renderCalendar() {
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const firstDay = (new Date(calYear, calMonth, 1).getDay() + 6) % 7;
+  const todayStr = todayKey();
+
+  let html = `
+    <div class="cal-header">
+      <button class="date-arrow" onclick="prevMonth()">←</button>
+      <div class="cal-title">${formatMonthYear(new Date(calYear, calMonth))}</div>
+      <button class="date-arrow" onclick="nextMonth()">→</button>
+    </div>
+    <div class="cal-daynames">
+      ${["Ma","Di","Wo","Do","Vr","Za","Zo"].map(d => `<div class="cal-dayname">${d}</div>`).join("")}
+    </div>
+    <div class="cal-grid">
+  `;
+
+  for (let i = 0; i < firstDay; i++) html += `<div class="cal-cell"></div>`;
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const key = dateKey(new Date(calYear, calMonth, day));
+    const entry = entries[key];
+    const isSel = key === selectedDate;
+    const isT = key === todayStr;
+    const hasData = entry && (entry.mood || entry.energy || entry.sleep || entry.bleeding);
+    const classes = `cal-cell ${isSel ? 'selected' : ''} ${isT ? 'today' : ''}`;
+
+    let inner = `<span class="day">${day}</span>`;
+    if (entry?.bleeding) inner += `<span class="cdot">🩸</span>`;
+    else if (hasData) inner += `<div class="mood-dot" style="background:${CATEGORIES[0].color}"></div>`;
+
+    html += `<button class="${classes}" onclick="selectCalDay('${key}')">${inner}</button>`;
+  }
+
+  html += `</div>
+    <div class="cal-legend">
+      <div class="legend-item"><span>🩸</span><span>Bloeding</span></div>
+      <div class="legend-item"><div class="mood-dot" style="background:${CATEGORIES[0].color};position:relative"></div><span>Data ingevuld</span></div>
+    </div>`;
+
+  document.getElementById("view-calendar").innerHTML = html;
+}
+
+function prevMonth() { if (calMonth === 0) { calMonth = 11; calYear--; } else calMonth--; renderCalendar(); }
+function nextMonth() { if (calMonth === 11) { calMonth = 0; calYear++; } else calMonth++; renderCalendar(); }
+function selectCalDay(key) { selectedDate = key; switchView("log"); }
+
+// TRENDS VIEW
+function renderTrends() {
+  const data = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const key = dateKey(d);
+    data.push({ date: d, key, entry: entries[key] || null });
+  }
+
+  let html = `<div class="trends-title">Afgelopen 30 dagen</div>`;
+
+  CATEGORIES.forEach(cat => {
+    const values = data.filter(d => d.entry && d.entry[cat.key]);
+    const avg = values.length > 0 ? (values.reduce((s, d) => s + d.entry[cat.key], 0) / values.length).toFixed(1) : "—";
+
+    html += `<div class="card">
+      <div class="trend-header">
+        <span class="trend-label">${cat.label}</span>
+        <span class="trend-avg" style="color:${cat.color}">gem. ${avg}</span>
+      </div>
+      <div class="trend-chart">`;
+
+    data.forEach(d => {
+      const val = d.entry?.[cat.key] || 0;
+      const height = val > 0 ? (val / 5) * 100 : 0;
+      const opacity = val > 0 ? 0.4 + (val / 5) * 0.6 : 0.1;
+      const bleed = d.entry?.bleeding;
+      html += `<div class="trend-bar-wrap">
+        <div class="trend-bar" style="height:${height}%;background:${val > 0 ? cat.color : 'transparent'};opacity:${opacity}"></div>
+        ${bleed ? '<div class="trend-bleed-dot"></div>' : ''}
+      </div>`;
+    });
+
+    html += `</div>
+      <div class="trend-dates"><span class="trend-date-label">30 dagen geleden</span><span class="trend-date-label">vandaag</span></div>
+    </div>`;
+  });
+
+  // Symptom frequency
+  const counts = {};
+  SYMPTOMS.forEach(s => counts[s.key] = 0);
+  data.forEach(d => (d.entry?.symptoms || []).forEach(s => counts[s] = (counts[s] || 0) + 1));
+  const sorted = SYMPTOMS.filter(s => counts[s.key] > 0).sort((a, b) => counts[b.key] - counts[a.key]);
+
+  html += `<div class="card"><div class="trend-header"><span class="trend-label">Symptoomfrequentie</span></div>`;
+  if (sorted.length === 0) {
+    html += `<div class="no-data">Nog geen symptomen gelogd</div>`;
+  } else {
+    const max = Math.max(...sorted.map(s => counts[s.key]));
+    sorted.forEach(s => {
+      const pct = (counts[s.key] / max) * 100;
+      html += `<div class="freq-row">
+        <span class="freq-icon">${s.icon}</span>
+        <span class="freq-label">${s.label}</span>
+        <div class="freq-bar-bg"><div class="freq-bar-fill" style="width:${pct}%"></div></div>
+        <span class="freq-count">${counts[s.key]}x</span>
+      </div>`;
+    });
+  }
+  html += `</div><div class="spacer"></div>`;
+
+  document.getElementById("view-trends").innerHTML = html;
+}
+
+// SETTINGS VIEW
+function renderSettings() {
+  const totalDays = Object.keys(entries).length;
+  const bleedDays = Object.values(entries).filter(e => e.bleeding).length;
+  const streak = calcStreak();
+
+  let html = `
+    <div class="card">
+      <div class="card-label">Statistieken</div>
+      <div class="stats-row">
+        <div class="stat"><div class="stat-val">${totalDays}</div><div class="stat-label">dagen gelogd</div></div>
+        <div class="stat"><div class="stat-val">${bleedDays}</div><div class="stat-label">bloedingsdagen</div></div>
+        <div class="stat"><div class="stat-val">${streak}</div><div class="stat-label">dag streak</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Je data beheren</div>
+      <div class="settings-btn-row">
+        <button class="settings-btn" onclick="exportData()">
+          <span class="sicon">📤</span>Backup maken
+        </button>
+        <button class="settings-btn" onclick="document.getElementById('importFile').click()">
+          <span class="sicon">📥</span>Backup laden
+        </button>
+      </div>
+      <div class="settings-btn-row">
+        <button class="settings-btn danger-btn" onclick="clearData()">
+          <span class="sicon">🗑️</span>Alles wissen
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Over deze app</div>
+      <p style="font-size:13px;color:#8B7D6B;line-height:1.6">
+        Deze cyclustracker is speciaal voor jou gebouwd. Je data wordt alleen lokaal op je telefoon opgeslagen — 
+        niets wordt verstuurd. Maak regelmatig een backup via de knop hierboven.
+        <br><br>
+        Tip: voeg deze pagina toe aan je beginscherm voor een app-ervaring.
+        <br><br>
+        <strong>iPhone:</strong> Safari → deel-icoon → "Zet op beginscherm"
+        <br>
+        <strong>Android:</strong> Chrome → menu → "Toevoegen aan startscherm"
+      </p>
+    </div>
+    <div class="spacer"></div>
+  `;
+
+  document.getElementById("view-settings").innerHTML = html;
+}
+
+function calcStreak() {
+  let streak = 0;
+  const d = new Date();
+  while (true) {
+    const key = dateKey(d);
+    if (entries[key] && (entries[key].mood || entries[key].energy || entries[key].sleep || entries[key].bleeding)) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else break;
+  }
+  return streak;
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(entries, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `cyclustracker-backup-${todayKey()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById("importFile").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (typeof imported === "object" && imported !== null) {
+        entries = { ...entries, ...imported };
+        saveEntries();
+        alert(`Backup geladen! ${Object.keys(imported).length} dagen geïmporteerd.`);
+        renderSettings();
+      }
+    } catch(err) {
+      alert("Kon het bestand niet laden. Is het een geldig backup-bestand?");
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+});
+
+function clearData() {
+  if (confirm("Weet je zeker dat je ALLE data wilt wissen? Dit kan niet ongedaan worden gemaakt.")) {
+    if (confirm("Echt zeker? Heb je eerst een backup gemaakt?")) {
+      entries = {};
+      saveEntries();
+      renderSettings();
+      alert("Alle data is gewist.");
+    }
+  }
+}
+
+// Init
+loadEntries();
+renderNav();
+renderLog();
+</script>
+</body>
+</html>
